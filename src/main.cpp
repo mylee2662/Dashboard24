@@ -59,17 +59,50 @@ void setup()
   /* Draw telemetry status */
   tft.fillRect(750, 0, 50, 50, RA8875_GREEN);
 
-  //Drive States: Drive, Reverse, 
+  //Drive States: Drive, Neutral, Off 
+  //Constants
+  int squareSize = 8; // Size of each square
+  int startX = 384; // Starting X position
+  int startY = 80; // Starting Y position
   // Draw D
-  tft.fillRect(384, 80, 8, 72, RA8875_BLACK);
-  tft.fillRect(384, 80, 32, 8, RA8875_BLACK);
-  tft.fillRect(384, 152, 32, 8, RA8875_BLACK);
-  tft.fillRect(416, 88, 8, 8, RA8875_BLACK);
-  tft.fillRect(416, 144, 8, 8, RA8875_BLACK);
-  tft.fillRect(424, 96, 8, 48, RA8875_BLACK);
+  // tft.fillRect(384, 80, 8, 72, RA8875_BLACK);
+  // tft.fillRect(384, 80, 32, 8, RA8875_BLACK);
+  // tft.fillRect(384, 152, 32, 8, RA8875_BLACK);
+  // tft.fillRect(416, 88, 8, 8, RA8875_BLACK);
+  // tft.fillRect(416, 144, 8, 8, RA8875_BLACK);
+  // tft.fillRect(424, 96, 8, 48, RA8875_BLACK);
 
   //Draw O
+  // tft.fillRect(384, 88, 8, 64, RA8875_BLACK);
 
+  // tft.fillRect(392, 80, 32, 8, RA8875_BLACK);
+  // tft.fillRect(392, 152, 32, 8, RA8875_BLACK);
+
+  // tft.fillRect(424, 88, 8, 64, RA8875_BLACK);
+
+  //Draw N
+  // // Draw the left vertical line of 'N'
+  // for (int i = 0; i < 9; i++) {
+  //   tft.fillRect(startX, startY + i * squareSize, squareSize, squareSize, RA8875_BLACK);
+  // }
+  // // Draw the right vertical line of 'N'
+  // for (int i = 0; i < 9; i++) {
+  //   tft.fillRect(startX + 5 * squareSize, startY + i * squareSize, squareSize, squareSize, RA8875_BLACK);
+  // }
+  //  // Draw the staggered diagonal that goes down 2 squares for each step to the right
+  // for (int x = 1, y = 0; x < 6 && y < 9; x++, y += 2) {
+  //   // Ensure the diagonal does not extend beyond the bottom of the grid
+  //   if(y < 9) {
+  //     tft.fillRect(startX + x * squareSize, startY + y * squareSize, squareSize, squareSize, RA8875_BLACK);
+  //   }
+  //   if (y + 1 < 9) { // Check if there's room to move down one more row
+  //     tft.fillRect(startX + x * squareSize, startY + (y + 1) * squareSize, squareSize, squareSize, RA8875_BLACK);
+  //   }
+  // }
+
+  //Numbers
+  startX = 384;
+  startY = 160;
   // Draw 0
   tft.fillRect(384, 96, 8, 48, RA8875_BLACK);
 
