@@ -65,12 +65,12 @@ void setup()
   int startX = 384; // Starting X position
   int startY = 80; // Starting Y position
   // Draw D
-  // tft.fillRect(384, 80, 8, 72, RA8875_BLACK);
-  // tft.fillRect(384, 80, 32, 8, RA8875_BLACK);
-  // tft.fillRect(384, 152, 32, 8, RA8875_BLACK);
-  // tft.fillRect(416, 88, 8, 8, RA8875_BLACK);
-  // tft.fillRect(416, 144, 8, 8, RA8875_BLACK);
-  // tft.fillRect(424, 96, 8, 48, RA8875_BLACK);
+  tft.fillRect(startX + 8, 80, 8, 72, RA8875_BLACK);
+  tft.fillRect(startX + 8, 80, 32, 8, RA8875_BLACK);
+  tft.fillRect(startX + 8, 152, 32, 8, RA8875_BLACK);
+  tft.fillRect(startX + 40, 88, 8, 8, RA8875_BLACK);
+  tft.fillRect(startX + 40, 144, 8, 8, RA8875_BLACK);
+  tft.fillRect(startX + 48, 96, 8, 48, RA8875_BLACK);
 
   //Draw O
   // tft.fillRect(384, 88, 8, 64, RA8875_BLACK);
@@ -101,22 +101,102 @@ void setup()
   // }
 
   //Numbers
-  startX = 384;
-  startY = 160;
+  // startX = 384;
+  startX = 336;
+  startY = 216;
   // Draw 0
-  tft.fillRect(384, 96, 8, 48, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY + 16, 8, 40, RA8875_BLACK);
 
-  tft.fillRect(400, 80, 16, 8, RA8875_BLACK);
-  tft.fillRect(400, 152, 16, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 24, startY, 16, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 24, startY + 64, 16, 8, RA8875_BLACK);
 
-  tft.fillRect(392, 88, 8, 8, RA8875_BLACK);
-  tft.fillRect(416, 88, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 16, startY + 8, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 40, startY + 8, 8, 8, RA8875_BLACK);
 
-  tft.fillRect(392, 144, 8, 8, RA8875_BLACK);
-  tft.fillRect(416, 144, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 16, startY + 56, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 40, startY + 56, 8, 8, RA8875_BLACK);
 
-  tft.fillRect(424, 96, 8, 48, RA8875_BLACK);
-  
+  // tft.fillRect(startX + 48, startY + 16, 8, 40, RA8875_BLACK);
+
+  // Draw 1
+  // tft.fillRect(startX + 12, startY + 16, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 20, startY + 8, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 28, startY, 8, 72, RA8875_BLACK);
+
+  // Draw 2
+  // tft.fillRect(startX, startY + 16, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY + 8, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 16, startY, 32, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 48, startY + 8, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 56, startY + 16, 8, 16, RA8875_BLACK);
+  // tft.fillRect(startX + 48, startY + 32, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 24, startY + 40, 24, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY + 48, 16, 8, RA8875_BLACK);
+  // tft.fillRect(startX, startY + 56, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX, startY + 64, 64, 8, RA8875_BLACK);
+
+  // Draw 3
+  // tft.fillRect(startX, startY + 8, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY, 48, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 56, startY + 8, 8, 24, RA8875_BLACK);
+  // tft.fillRect(startX + 24, startY + 32, 32, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 56, startY + 40, 8, 24, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY + 64, 48, 8, RA8875_BLACK);
+  // tft.fillRect(startX, startY + 56, 8, 8, RA8875_BLACK);
+
+  // Draw 4
+  // tft.fillRect(startX, startY, 8, 40, RA8875_BLACK);
+  // tft.fillRect(startX + 40, startY, 8, 72, RA8875_BLACK);
+  // tft.fillRect(startX, startY + 32, 64, 8, RA8875_BLACK);
+
+  // Draw 5
+  tft.fillRect(startX, startY, 64, 8, RA8875_BLACK);
+  tft.fillRect(startX, startY, 8, 24, RA8875_BLACK);
+  tft.fillRect(startX, startY + 24, 48, 8, RA8875_BLACK);
+  tft.fillRect(startX + 48, startY + 32, 8, 8, RA8875_BLACK);
+  tft.fillRect(startX + 56, startY + 40, 8, 16, RA8875_BLACK);
+  tft.fillRect(startX + 48, startY + 56, 8, 8, RA8875_BLACK);
+  tft.fillRect(startX + 8, startY + 64, 40, 8, RA8875_BLACK);
+  tft.fillRect(startX, startY + 56, 8, 8, RA8875_BLACK);
+
+  // Draw 6
+  // tft.fillRect(startX + 56, startY + 16, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 48, startY + 8, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 16, startY, 32, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY + 8, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX, startY + 16, 8, 48, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY + 64, 48, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 56, startY + 48, 8, 16, RA8875_BLACK);
+  // tft.fillRect(startX + 48, startY + 40, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX, startY + 32, 48, 8, RA8875_BLACK);
+
+  // Draw 7
+  // tft.fillRect(startX, startY, 64, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 56, startY, 8, 24, RA8875_BLACK);
+  // tft.fillRect(startX + 48, startY + 24, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 40, startY + 32, 8, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 24, startY + 40, 16, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 16, startY + 48, 8, 24, RA8875_BLACK);
+
+  startX = 416;
+  // Draw 8
+  // tft.fillRect(startX + 8, startY, 48, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY + 32, 48, 8, RA8875_BLACK);
+  // tft.fillRect(startX + 8, startY + 64, 48, 8, RA8875_BLACK);
+
+  // tft.fillRect(startX, startY + 8, 8, 24, RA8875_BLACK);
+  // tft.fillRect(startX, startY + 40, 8, 24, RA8875_BLACK);
+  // tft.fillRect(startX + 56, startY + 8, 8, 24, RA8875_BLACK);
+  // tft.fillRect(startX + 56, startY + 40, 8, 24, RA8875_BLACK);
+
+  // Draw 9
+  tft.fillRect(startX + 8, startY, 48, 8, RA8875_BLACK);
+  tft.fillRect(startX, startY + 8, 8, 24, RA8875_BLACK);
+  tft.fillRect(startX + 8, startY + 32, 56, 8, RA8875_BLACK);
+  tft.fillRect(startX + 56, startY + 8, 8, 56, RA8875_BLACK);
+  tft.fillRect(startX + 8, startY + 64, 48, 8, RA8875_BLACK);
+  tft.fillRect(startX, startY + 56, 8, 8, RA8875_BLACK);
+
   /* Switch to text mode */
   tft.textMode();
 

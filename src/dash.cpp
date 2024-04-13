@@ -1,5 +1,6 @@
 #include "dash.h"
 
+#include <string>
 #include "teensy_can.h"
 #include "virtualTimer.h"
 #include "SPI.h"
@@ -10,7 +11,15 @@
 #define RA8875_CS 10
 #define RA8875_RESET 8
 
+int drive_state_startX;
+int drive_state_startY;
+int wheel_speed_startX;
+int wheel_Speed_start;
+
 u_int16_t steering_angle;
+
+float wheel_speed;
+
 
 //Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RESET);
 
@@ -46,4 +55,20 @@ void Dash::UpdateDisplay()
 
 
     timer_group.Tick(millis());
+}
+
+void Dash::DrawDisplay(Adafruit_RA8875 tft, int startX, int startY, std::string input){
+    
+}
+
+//Method to take drive state (got from CAN) and get it to a string
+std::string Dash::ParseDriveState(int drive_state){
+    switch(drive_state){
+        case 0:
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+    }
 }
