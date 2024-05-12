@@ -12,18 +12,15 @@
 #define RA8875_CS 10
 #define RA8875_RESET 8
 
-int drive_state_startX;
-int drive_state_startY;
-int wheel_speed_startX;
-int wheel_Speed_start;
+int drive_state_startX = 384;
+int drive_state_startY = 80;
+int wheel_speed_startX = 384;
+int wheel_speed_startY = 216;
 
-u_int16_t steering_angle;
-
-float wheel_speed;
+//float fl_wheel_speed;
+//float fr_wheel_speed;
 float motor_temp;
-int drive_state;
-
-//Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RESET);
+int drive_state = 2; //Just a temp value to test wheel board
 
 void Dash::GetCAN()
 {
@@ -33,39 +30,69 @@ void Dash::GetCAN()
 
 void Dash::Initialize()
 {
+    Serial.println("Initializing Dashboard");
+
     p_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
     g_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
     
-    p_can_bus.RegisterRXMessage(rx_motor);
-    g_can_bus.RegisterRXMessage(rx_wheel);
+    p_can_bus.RegisterRXMessage(rx_drive_state);
+    g_can_bus.RegisterRXMessage(rx_wheel_speeds);
 
-    timer_group.AddTimer(1, [this](){ this->GetCAN(); });
+    timer_group.AddTimer(10, [this](){ this->GetCAN(); });
 }
 
-//v_o = v_1*(r_2/(r_1+r_2))
-//v_o <= 3.3 V
-void Dash::SetSteeringAngle(u_int16_t curr_steering_angle)
-{
-    steering_angle = curr_steering_angle;
+float Dash::WheelSpeedAvg(float fl_wheel_speed, float fr_wheel_speed){
+    return (fl_wheel_speed + fr_wheel_speed) / 2;
 }
 
-void Dash::UpdateDisplay()
+void Dash::UpdateDisplay(Adafruit_RA8875 tft)
 {   
-    wheel_speed = static_cast<float>(wheel_speed_signal);
-    motor_temp = static_cast<float>(motor_temp_signal);
-    drive_state = static_cast<int>(drive_state_signal);
+    float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
+    float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
 
+    Serial.println("FRONT LEFT");
+    Serial.println(fl_wheel_speed);
+    Serial.println("FRONT RIGHT");
+    Serial.println(fr_wheel_speed);
+
+    //float avg_wheel_speed = WheelSpeedAvg(fl_wheel_speed, fr_wheel_speed);
+
+    //motor_temp = static_cast<float>(motor_temp_signal);
+    //drive_state = static_cast<int>(drive_state_signal);
+
+    tft.fillScreen(RA8875_WHITE);
+
+    DrawDriveState(tft, drive_state_startX, drive_state_startY, 8);
+    //DrawWheelSpeed(tft, avg_wheel_speed, wheel_speed_startX, wheel_speed_startY);
+    DrawWheelSpeed(tft, fr_wheel_speed, wheel_speed_startX, wheel_speed_startY);
 
     timer_group.Tick(millis());
 }
 
-void Dash::DrawDisplay(Adafruit_RA8875 tft, int startX, int startY){
-    // TODO
-}
-
-void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, int startX, int start){
+void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, int startY){
+    //Serial.println("Drawing Wheel Speed");
+    
     int rounded_wheel_speed = round(wheel_speed);
+
+    Serial.println(rounded_wheel_speed);
     // TODO
+
+    //Making a naive assumption that 0 <= wheel speed < 100
+     if(wheel_speed > 9){
+        //Digits must be off center for double digit numbers
+        startX += 32;
+     }
+     else if(wheel_speed == 0){
+        DrawDigit(tft, 0, startX, startY, 8);
+     }
+
+    while(rounded_wheel_speed > 0){
+        int digit = rounded_wheel_speed % 10;
+        rounded_wheel_speed /= 10;
+
+        DrawDigit(tft, digit, startX, startY, 8);
+        startX -= 80;
+    }
 }
 
 //Draws drive state on screen based on CAN signal
@@ -109,6 +136,8 @@ void Dash::DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int squar
             tft.fillRect(startX + 48, 96, squareSize, squareSize * 6, RA8875_BLACK);
 
             break;
+        default:
+            Serial.print("Unknown drive state");
     }
 }
 
