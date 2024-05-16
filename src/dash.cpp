@@ -60,6 +60,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     //motor_temp = static_cast<float>(motor_temp_signal);
     //drive_state = static_cast<int>(drive_state_signal);
 
+    //White out the screen
     tft.fillScreen(RA8875_WHITE);
 
     DrawDriveState(tft, drive_state_startX, drive_state_startY, 8);
