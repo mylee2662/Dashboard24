@@ -17,6 +17,8 @@ int drive_state_startY = 80;
 int wheel_speed_startX = 384;
 int wheel_speed_startY = 216;
 
+int bar_max_size = 280;
+
 //float fl_wheel_speed;
 //float fr_wheel_speed;
 float motor_temp;
@@ -68,6 +70,24 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     DrawWheelSpeed(tft, fr_wheel_speed, wheel_speed_startX, wheel_speed_startY);
 
     timer_group.Tick(millis());
+}
+
+void Dash::DrawBar(Adafruit_RA8875 tft, float value, int max_value, int min_value, int width, int startX, int startY){
+    //Check the bounds for any potential issues
+    if(value < min_value){
+        Serial.println("Value is below minimum");
+    }
+    else if(value > max_value){
+        Serial.println("Value is above maximum");
+    }
+
+    //Calculate the size of the current bar with respect to its max size percentage wise
+    float curr_bar_percentage = (value - min_value) / (max_value - min_value);
+    int curr_bar_level = round(curr_bar_percentage * bar_max_size);     //Get the actual size of the current bar
+    int bar_size_diff = bar_max_size - curr_bar_level;
+    int curr_bar_y = startY + bar_size_diff;
+
+    tft.fillRect(startX, curr_bar_y, width, curr_bar_level, RA8875_BLUE);
 }
 
 void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, int startY){

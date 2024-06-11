@@ -23,8 +23,8 @@ class Dash
         void GetCAN();
         void Initialize();
         void UpdateDisplay(Adafruit_RA8875 tft);
-        void DrawDisplay(Adafruit_RA8875 tft, int startX, int startY);
-
+        
+        void DrawBar(Adafruit_RA8875 tft, float value, int max_value, int min_value, int width, int startX, int startY);
         float WheelSpeedAvg(float fl_wheel_speed, float fr_wheel_speed);
         void DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, int startY);
         void DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int squareSize);
