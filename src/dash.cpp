@@ -63,16 +63,18 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     //drive_state = static_cast<int>(drive_state_signal);
 
     //White out the screen
-    tft.fillScreen(RA8875_WHITE);
+    //tft.fillScreen(RA8875_WHITE);
 
     DrawDriveState(tft, drive_state_startX, drive_state_startY, 8);
     //DrawWheelSpeed(tft, avg_wheel_speed, wheel_speed_startX, wheel_speed_startY);
     DrawWheelSpeed(tft, fr_wheel_speed, wheel_speed_startX, wheel_speed_startY);
 
+    DrawBar(tft, 20, 10, 40, 100, 0, 200);
+
     timer_group.Tick(millis());
 }
 
-void Dash::DrawBar(Adafruit_RA8875 tft, float value, int max_value, int min_value, int width, int startX, int startY){
+void Dash::DrawBar(Adafruit_RA8875 tft, float value, int min_value, int max_value, int width, int startX, int startY){
     //Check the bounds for any potential issues
     if(value < min_value){
         Serial.println("Value is below minimum");
@@ -80,6 +82,9 @@ void Dash::DrawBar(Adafruit_RA8875 tft, float value, int max_value, int min_valu
     else if(value > max_value){
         Serial.println("Value is above maximum");
     }
+
+    //White out space
+    tft.fillRect(startX, startY, width, bar_max_size, RA8875_WHITE);
 
     //Calculate the size of the current bar with respect to its max size percentage wise
     float curr_bar_percentage = (value - min_value) / (max_value - min_value);
@@ -92,11 +97,13 @@ void Dash::DrawBar(Adafruit_RA8875 tft, float value, int max_value, int min_valu
 
 void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, int startY){
     //Serial.println("Drawing Wheel Speed");
+
+    //White out space
+    tft.drawRect(startX, startY, 160, 72, RA8875_WHITE);
     
     int rounded_wheel_speed = round(wheel_speed);
 
     Serial.println(rounded_wheel_speed);
-    // TODO
 
     //Making a naive assumption that 0 <= wheel speed < 100
      if(wheel_speed > 9){
@@ -118,6 +125,9 @@ void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, in
 
 //Draws drive state on screen based on CAN signal
 void Dash::DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int squareSize){
+    //White out space
+    tft.fillRect(startX, startY, 64, 72, RA8875_WHITE);
+
     switch(drive_state){
         case 0:
             //Off
