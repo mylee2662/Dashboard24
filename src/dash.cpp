@@ -22,7 +22,8 @@ int bar_max_size = 280;
 //float fl_wheel_speed;
 //float fr_wheel_speed;
 float motor_temp;
-int drive_state = 2; //Just a temp value to test wheel board
+int drive_state = -1; //Just a temp value to test wheel board
+bool drive_state_drawn = false;
 
 void Dash::GetCAN()
 {
@@ -128,53 +129,54 @@ void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, in
 
 //Draws drive state on screen based on CAN signal
 void Dash::DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int curr_drive_state, int squareSize){
-    //White out space
     if(curr_drive_state != drive_state){
+        //White out space
         tft.fillRect(startX, startY, 64, 72, RA8875_WHITE);
+
         drive_state = curr_drive_state;
-    }
 
-    switch(drive_state){
-        case 0:
-            //Off
-            tft.fillRect(startX, startY + squareSize, squareSize, squareSize * 8, RA8875_BLACK);
+        switch(drive_state){
+            case 0:
+                //Off
+                tft.fillRect(startX, startY + squareSize, squareSize, squareSize * 8, RA8875_BLACK);
 
-            tft.fillRect(startX + squareSize, 80, squareSize * 4, squareSize, RA8875_BLACK);
-            tft.fillRect(startX + squareSize, 152, squareSize * 4, squareSize, RA8875_BLACK);
+                tft.fillRect(startX + squareSize, 80, squareSize * 4, squareSize, RA8875_BLACK);
+                tft.fillRect(startX + squareSize, 152, squareSize * 4, squareSize, RA8875_BLACK);
 
-            tft.fillRect(424, 88, squareSize, squareSize * 8, RA8875_BLACK);
-            
-            break;
-        case 1:
-            //Neutral
-            // Draw the left vertical line of 'N'
-            tft.fillRect(startX, startY, squareSize, squareSize * 9, RA8875_BLACK);
-            // Draw the right vertical line of 'N'
-            tft.fillRect(startX + 5 * squareSize, startY, squareSize, squareSize * 9, RA8875_BLACK);
-            // Draw the staggered diagonal that goes down 2 squares for each step to the right
-            for (int x = 1, y = 0; x < 6 && y < 9; x++, y += 2) {
-                // Ensure the diagonal does not extend beyond the bottom of the grid
-                if(y < 9) {
-                    tft.fillRect(startX + x * squareSize, startY + y * squareSize, squareSize, squareSize, RA8875_BLACK);
+                tft.fillRect(424, 88, squareSize, squareSize * 8, RA8875_BLACK);
+                
+                break;
+            case 1:
+                //Neutral
+                // Draw the left vertical line of 'N'
+                tft.fillRect(startX, startY, squareSize, squareSize * 9, RA8875_BLACK);
+                // Draw the right vertical line of 'N'
+                tft.fillRect(startX + 5 * squareSize, startY, squareSize, squareSize * 9, RA8875_BLACK);
+                // Draw the staggered diagonal that goes down 2 squares for each step to the right
+                for (int x = 1, y = 0; x < 6 && y < 9; x++, y += 2) {
+                    // Ensure the diagonal does not extend beyond the bottom of the grid
+                    if(y < 9) {
+                        tft.fillRect(startX + x * squareSize, startY + y * squareSize, squareSize, squareSize, RA8875_BLACK);
+                    }
+                    if (y + 1 < 9) { // Check if there's room to move down one more row
+                        tft.fillRect(startX + x * squareSize, startY + (y + 1) * squareSize, squareSize, squareSize, RA8875_BLACK);
+                    }
                 }
-                if (y + 1 < 9) { // Check if there's room to move down one more row
-                    tft.fillRect(startX + x * squareSize, startY + (y + 1) * squareSize, squareSize, squareSize, RA8875_BLACK);
-                }
-            }
 
-            break;
-        case 2:
-            //Drive
-            tft.fillRect(startX + 8, 80, squareSize, squareSize * 9, RA8875_BLACK);
-            tft.fillRect(startX + 8, 80, squareSize * 4, squareSize, RA8875_BLACK);
-            tft.fillRect(startX + 8, 152, squareSize * 4, squareSize, RA8875_BLACK);
-            tft.fillRect(startX + 40, 88, squareSize, squareSize, RA8875_BLACK);
-            tft.fillRect(startX + 40, 144, squareSize, squareSize, RA8875_BLACK);
-            tft.fillRect(startX + 48, 96, squareSize, squareSize * 6, RA8875_BLACK);
+                break;
+            case 2:
+                //Drive
+                tft.fillRect(startX + 8, 80, squareSize, squareSize * 9, RA8875_BLACK);
+                tft.fillRect(startX + 8, 80, squareSize * 4, squareSize, RA8875_BLACK);
+                tft.fillRect(startX + 8, 152, squareSize * 4, squareSize, RA8875_BLACK);
+                tft.fillRect(startX + 40, 88, squareSize, squareSize, RA8875_BLACK);
+                tft.fillRect(startX + 40, 144, squareSize, squareSize, RA8875_BLACK);
+                tft.fillRect(startX + 48, 96, squareSize, squareSize * 6, RA8875_BLACK);
 
-            break;
-        default:
-            Serial.print("Unknown drive state");
+                break;
+            default:
+                Serial.print("Unknown drive state");
+        }
     }
 }
 

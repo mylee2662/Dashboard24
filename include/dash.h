@@ -37,13 +37,14 @@ class Dash
         CANSignal<float, 16, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> fl2_wheel_temp_signal;
         CANSignal<float, 32, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> fr1_wheel_temp_signal;
         CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> fr2_wheel_temp_signal;
-
+        CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> coolant_temp_signal;
+        CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> coolant_flow_signal;
         //CANSignal<float, 64, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> fl_wheel_speed_signal;
         CANSignal<float, 16, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> fl_wheel_speed_signal;
         CANSignal<float, 0, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> fr_wheel_speed_signal;
         CANSignal<int, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> drive_state_signal;
-
-        CANRXMessage<2> rx_wheel_speeds{g_can_bus, 0x410, fl_wheel_speed_signal, fr_wheel_speed_signal};
-        CANRXMessage<4> rx_wheel_temps{g_can_bus, 0x411, fl1_wheel_temp_signal, fl2_wheel_temp_signal, fr1_wheel_temp_signal, fr2_wheel_temp_signal};
+        CANRXMessage<2> rx_wheel_speeds{g_can_bus, 0x411, fl_wheel_speed_signal, fr_wheel_speed_signal};
+        //CANRXMessage<4> rx_wheel_temps{g_can_bus, 0x411, fl1_wheel_temp_signal, fl2_wheel_temp_signal, fr1_wheel_temp_signal, fr2_wheel_temp_signal};
         CANRXMessage<1> rx_drive_state{p_can_bus, 0x000, drive_state_signal};
+        CANRXMessage<2> rx_coolant_state{g_can_bus, 0x420, coolant_temp_signal, coolant_flow_signal};
 };
