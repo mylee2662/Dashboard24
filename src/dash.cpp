@@ -19,6 +19,10 @@ int wheel_speed_startY = 216;
 
 int bar_max_size = 280;
 
+int prev_temp_bar_level = 280;
+int prev_temp_bar_y = 0;
+
+
 //float fl_wheel_speed;
 //float fr_wheel_speed;
 float motor_temp;
@@ -73,12 +77,12 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     //DrawWheelSpeed(tft, avg_wheel_speed, wheel_speed_startX, wheel_speed_startY);
     DrawWheelSpeed(tft, fr_wheel_speed, wheel_speed_startX, wheel_speed_startY);
 
-    DrawBar(tft, 20, 10, 40, 100, 0, 200);
+    DrawBar(tft, 0, &prev_temp_bar_y, 100, 30, 0, 50, &prev_temp_bar_level);
 
     timer_group.Tick(millis());
 }
 
-void Dash::DrawBar(Adafruit_RA8875 tft, float value, int min_value, int max_value, int width, int startX, int startY){
+void Dash::DrawBar(Adafruit_RA8875 tft, int startX, int *prev_bar_y, int width, float value, int min_value, int max_value, int *prev_bar_level){
     //Check the bounds for any potential issues
     if(value < min_value){
         Serial.println("Value is below minimum");
@@ -88,15 +92,27 @@ void Dash::DrawBar(Adafruit_RA8875 tft, float value, int min_value, int max_valu
     }
 
     //White out space
-    tft.fillRect(startX, startY, width, bar_max_size, RA8875_WHITE);
+    //tft.fillRect(startX, startY, width, bar_max_size, RA8875_WHITE);
 
     //Calculate the size of the current bar with respect to its max size percentage wise
     float curr_bar_percentage = (value - min_value) / (max_value - min_value);
     int curr_bar_level = round(curr_bar_percentage * bar_max_size);     //Get the actual size of the current bar
-    int bar_size_diff = bar_max_size - curr_bar_level;
-    int curr_bar_y = startY + bar_size_diff;
+    //int bar_size_diff = bar_max_size - curr_bar_level;
+    //int curr_bar_y = startY + bar_size_diff;
 
-    tft.fillRect(startX, curr_bar_y, width, curr_bar_level, RA8875_BLUE);
+    int bar_level_diff = curr_bar_level - *prev_bar_level; //positive means the bar is shrinking (draw white space), negative means bar is growing (draw bar)
+
+    if(bar_level_diff > 0){
+        //white out space
+        tft.fillRect(startX, *prev_bar_y, width, bar_level_diff, RA8875_WHITE);
+    }
+    else if(bar_level_diff < 0){
+        //Draw additional bar segment
+        tft.fillRect(startX, *prev_bar_level + bar_level_diff, width, bar_level_diff, RA8875_BLUE);
+    }
+
+    *prev_bar_level = curr_bar_level;
+    *prev_bar_y += bar_level_diff;
 }
 
 void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, int startY){
