@@ -52,6 +52,9 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
     float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
 
+    //int curr_drive_state = static_cast<int>(drive_state_signal);
+    int curr_drive_state = 2;
+
     Serial.println("FRONT LEFT");
     Serial.println(fl_wheel_speed);
     Serial.println("FRONT RIGHT");
@@ -65,7 +68,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     //White out the screen
     //tft.fillScreen(RA8875_WHITE);
 
-    DrawDriveState(tft, drive_state_startX, drive_state_startY, 8);
+    DrawDriveState(tft, drive_state_startX, drive_state_startY, curr_drive_state, 8);
     //DrawWheelSpeed(tft, avg_wheel_speed, wheel_speed_startX, wheel_speed_startY);
     DrawWheelSpeed(tft, fr_wheel_speed, wheel_speed_startX, wheel_speed_startY);
 
@@ -124,9 +127,12 @@ void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, in
 }
 
 //Draws drive state on screen based on CAN signal
-void Dash::DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int squareSize){
+void Dash::DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int curr_drive_state, int squareSize){
     //White out space
-    tft.fillRect(startX, startY, 64, 72, RA8875_WHITE);
+    if(curr_drive_state != drive_state){
+        tft.fillRect(startX, startY, 64, 72, RA8875_WHITE);
+        drive_state = curr_drive_state;
+    }
 
     switch(drive_state){
         case 0:

@@ -27,7 +27,7 @@ class Dash
         void DrawBar(Adafruit_RA8875 tft, float value, int max_value, int min_value, int width, int startX, int startY);
         float WheelSpeedAvg(float fl_wheel_speed, float fr_wheel_speed);
         void DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, int startY);
-        void DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int squareSize);
+        void DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int curr_drive_state, int squareSize);
         void DrawDigit(Adafruit_RA8875 tft, int digit, int startX, int startY, int squareSize);
     private:
         TeensyCAN<2> p_can_bus{};
