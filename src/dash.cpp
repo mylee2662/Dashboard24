@@ -17,16 +17,16 @@ int drive_state_startY = 80;
 int wheel_speed_startX = 384;
 int wheel_speed_startY = 216;
 
-int bar_max_size = 280;
+int bar_max_size = 480;
 
 int prev_temp_bar_level = 280;
-int prev_temp_bar_y = 0;
+int prev_temp_bar_y = 200;
 
 
 //float fl_wheel_speed;
 //float fr_wheel_speed;
 float motor_temp;
-int drive_state = -1; //Just a temp value to test wheel board
+int drive_state = -1;
 bool drive_state_drawn = false;
 
 void Dash::GetCAN()
@@ -77,7 +77,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     //DrawWheelSpeed(tft, avg_wheel_speed, wheel_speed_startX, wheel_speed_startY);
     DrawWheelSpeed(tft, fr_wheel_speed, wheel_speed_startX, wheel_speed_startY);
 
-    DrawBar(tft, 0, &prev_temp_bar_y, 100, 30, 0, 50, &prev_temp_bar_level);
+    DrawBar(tft, 0, &prev_temp_bar_y, 100, 25, 0, 50, &prev_temp_bar_level);
 
     timer_group.Tick(millis());
 }
@@ -100,13 +100,13 @@ void Dash::DrawBar(Adafruit_RA8875 tft, int startX, int *prev_bar_y, int width, 
     //int bar_size_diff = bar_max_size - curr_bar_level;
     //int curr_bar_y = startY + bar_size_diff;
 
-    int bar_level_diff = curr_bar_level - *prev_bar_level; //positive means the bar is shrinking (draw white space), negative means bar is growing (draw bar)
+    int bar_level_diff = curr_bar_level - *prev_bar_level; //negative means the bar is shrinking (draw white space), positive means bar is growing (draw bar)
 
-    if(bar_level_diff > 0){
+    if(bar_level_diff < 0){
         //white out space
         tft.fillRect(startX, *prev_bar_y, width, bar_level_diff, RA8875_WHITE);
     }
-    else if(bar_level_diff < 0){
+    else if(bar_level_diff > 0){
         //Draw additional bar segment
         tft.fillRect(startX, *prev_bar_level + bar_level_diff, width, bar_level_diff, RA8875_BLUE);
     }
