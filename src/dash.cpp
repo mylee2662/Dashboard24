@@ -22,6 +22,8 @@ int bar_max_size = 280;
 int prev_temp_bar_level = 280;
 int prev_temp_bar_y = 0;
 
+#define DEBUG
+
 
 //float fl_wheel_speed;
 //float fr_wheel_speed;
@@ -54,11 +56,19 @@ float Dash::WheelSpeedAvg(float fl_wheel_speed, float fr_wheel_speed){
 
 void Dash::UpdateDisplay(Adafruit_RA8875 tft)
 {   
+    #ifndef DEBUG
     float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
     float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
+    int curr_drive_state = static_cast<int>(drive_state_signal);
+    #else
+    // we should change the drive state for testing
+    // cycle based on time
+    int fl_wheel_speed = (millis() / 1000) % 100;
+    int fr_wheel_speed = (millis() / 2000) % 100;
+    int num_states = 3;
+    int curr_drive_state = (millis() / 1000) % num_states;
+    #endif
 
-    //int curr_drive_state = static_cast<int>(drive_state_signal);
-    int curr_drive_state = 2;
 
     Serial.println("FRONT LEFT");
     Serial.println(fl_wheel_speed);
@@ -147,7 +157,7 @@ void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, in
 void Dash::DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int curr_drive_state, int squareSize){
     if(curr_drive_state != drive_state){
         //White out space
-        tft.fillRect(startX, startY, 64, 72, RA8875_WHITE);
+        tft.fillRect(startX, startY, 64, 73, RA8875_WHITE);
 
         drive_state = curr_drive_state;
 
@@ -197,6 +207,9 @@ void Dash::DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int curr_
 }
 
 void Dash::DrawDigit(Adafruit_RA8875 tft, int digit, int startX, int startY, int squareSize){
+    // fill in the area behind the digit
+    tft.fillRect(startX, startY, 64, 72, RA8875_WHITE);
+
     switch(digit){
         case 0:
             tft.fillRect(startX + 8, startY + 16, 8, 40, RA8875_BLACK);
