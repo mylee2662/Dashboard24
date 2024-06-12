@@ -6,6 +6,9 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_RA8875.h"
 
+#define rawRGB24toRGB565(r, g, b) uint16_t((r / 8) << 11) | ((g / 4) << 5) | (b / 8)
+#define NORTHWESTERN_PURPLE rawRGB24toRGB565(78, 42, 132)
+
 //VirtualTimerGroup read_timer;
 
 class Dash
@@ -23,13 +26,15 @@ class Dash
         void GetCAN();
         void Initialize();
         void UpdateDisplay(Adafruit_RA8875 tft);
-        
+
+        void DrawBackground(Adafruit_RA8875 tft, int16_t color = NORTHWESTERN_PURPLE);
         void DrawBar(Adafruit_RA8875 tft, int startX, int *prev_bar_y, int width, float value, int min_value, int max_value, int *prev_bar_level);
         float WheelSpeedAvg(float fl_wheel_speed, float fr_wheel_speed);
         void DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, int startY);
         void DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int curr_drive_state, int squareSize);
-        void DrawDigit(Adafruit_RA8875 tft, int digit, int startX, int startY, int squareSize);
         void DrawIMDStatus(Adafruit_RA8875 tft, int startX, int startY, int imd_status, int squareSize);
+        void DrawError(Adafruit_RA8875 tft, std::string error_message, int startX, int startY);
+        void DrawString(Adafruit_RA8875 tft, std::string message, int startX, int startY, int size, int color);
     private:
         TeensyCAN<2> p_can_bus{};
         TeensyCAN<1> g_can_bus{};
@@ -54,6 +59,7 @@ class Dash
         CANSignal<bool, 16, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> imd_status_signal;
         CANRXMessage<2> rx_imd{g_can_bus, 0x300, imd_resistance_signal, imd_status_signal};
 
-        float prev_fl_wheel_speed = 0;
-        float prev_fr_wheel_speed = 0;
+        float prev_wheel_speed = -1;
+        float prev_fr_wheel_speed = -1;
+        bool prev_dected_error = false;
 };
