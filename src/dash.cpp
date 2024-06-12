@@ -96,7 +96,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     int fl_wheel_speed = (millis() / 200) % 200;
     int fr_wheel_speed = (millis() / 200) % 200;
     int curr_drive_state = (millis() / 1000) % 3;
-    int imd_status = millis() > 5000 ? -10 : 0;
+    int imd_status = millis() > 50000 ? -10 : 0;
 #endif
     float avg_wheel_speed = fl_wheel_speed + fr_wheel_speed / 2;
 
@@ -191,22 +191,22 @@ void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, in
 // Draws drive state on screen based on CAN signal
 void Dash::DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int curr_drive_state, int squareSize)
 {
-    if (curr_drive_state == drive_state)
-    {
-        return;
-    }
+    // if (curr_drive_state == drive_state)
+    // {
+    //     return;
+    // }
 
     char state;
     switch (curr_drive_state)
     {
     case 0:
-        state = 'O';
+        state = '-';
         break;
     case 1:
         state = 'N';
         break;
     case 2:
-        state = 'F';
+        state = 'D';
         break;
     }
 
