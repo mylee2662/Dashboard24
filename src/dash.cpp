@@ -18,7 +18,8 @@
 #define SCREEN_HEIGHT 480
 #define CENTER SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2
 #define CENTER_OFFSET(x, y) SCREEN_WIDTH / 2 + x, SCREEN_HEIGHT / 2 + y
-#define BAR_HEIGHT SCREEN_HEIGHT
+#define ERROR_BAND_HEIGHT 50
+#define BAR_HEIGHT SCREEN_HEIGHT - ERROR_BAND_HEIGHT
 #define BAR_WIDTH 60
 
 int drive_state_startX = SCREEN_WIDTH / 2;
@@ -71,8 +72,12 @@ void Dash::DrawBackground(Adafruit_RA8875 tft, int16_t color)
     int rect_height = 200;
     int rect_border_height = rect_height + 2 * border;
     // draw outlines
+    tft.fillRect(SCREEN_HEIGHT / 4 + border * 2, 0, SCREEN_HEIGHT, SCREEN_HEIGHT / 2, RA8875_BLACK);
     // tft.fillRect(0, SCREEN_HEIGHT / 2 - rect_border_height / 2, SCREEN_WIDTH, rect_border_height, RA8875_BLACK);
     tft.fillCircle(CENTER, SCREEN_HEIGHT / 2, RA8875_BLACK);
+
+    // draw the error band
+    tft.fillRect(0, 0, SCREEN_WIDTH, ERROR_BAND_HEIGHT, RA8875_BLACK);
     // fill in
     // tft.fillRect(0, SCREEN_HEIGHT / 2 - rect_height / 2, SCREEN_WIDTH, rect_height, RA8875_WHITE);
     tft.fillCircle(CENTER, SCREEN_HEIGHT / 2 - border, RA8875_WHITE);
@@ -102,7 +107,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     int fl_wheel_speed = (millis() / 200) % 200;
     int fr_wheel_speed = (millis() / 200) % 200;
     int curr_drive_state = (millis() / 1000) % 3;
-    int imd_status = millis() > 50000 ? -10 : 0;
+    int imd_status = millis() > 10000 ? -10 : 0;
 #endif
     float avg_wheel_speed = fl_wheel_speed + fr_wheel_speed / 2;
 
@@ -114,7 +119,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
         DrawWheelSpeed(tft, avg_wheel_speed, wheel_speed_startX, wheel_speed_startY);
     this->prev_wheel_speed = avg_wheel_speed;
     // draw IMD status
-    DrawIMDStatus(tft, 8, 8, imd_status, 32);
+    DrawIMDStatus(tft, 8, 2, imd_status, 32);
 
     // draw the test bar
     this->DrawBar(tft, "test", (millis() / 100) % 100 , RA8875_GREEN, this->backgroundColor);
@@ -265,20 +270,20 @@ void Dash::DrawError(Adafruit_RA8875 tft, std::string error_message, int startX,
 
     prev_dected_error = true;
     this->DrawBackground(tft, RA8875_RED);
-    DrawString(tft, error_message, startX, startY, 5, RA8875_WHITE);
+    DrawString(tft, error_message, startX, startY, 5, RA8875_WHITE, RA8875_BLACK);
 }
 
-void Dash::DrawString(Adafruit_RA8875 tft, std::string message, int startX, int startY, int size, int color, Direction dir)
+void Dash::DrawString(Adafruit_RA8875 tft, std::string message, int startX, int startY, int size, int16_t color, int16_t backgroundColor, Direction dir)
 {
     for (int i = 0; i < message.length(); i++)
     {
         switch (dir)
         {
         case LEFT_TO_RIGHT:
-            tft.drawChar(startX + i * size * 6, startY, message[i], RA8875_BLACK, RA8875_WHITE, size);
+            tft.drawChar(startX + i * size * 6, startY, message[i], color, backgroundColor, size);
             break;
         case UP_TO_DOWN:
-            tft.drawChar(startX, startY + i * size * 8, message[i], RA8875_BLACK, RA8875_WHITE, size);
+            tft.drawChar(startX, startY + i * size * 8, message[i], color, backgroundColor, size);
             break;
         default:
             break;

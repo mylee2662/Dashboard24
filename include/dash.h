@@ -55,7 +55,7 @@ public:
         void DrawDriveState(Adafruit_RA8875 tft, int startX, int startY, int curr_drive_state, int squareSize);
         void DrawIMDStatus(Adafruit_RA8875 tft, int startX, int startY, int imd_status, int squareSize);
         void DrawError(Adafruit_RA8875 tft, std::string error_message, int startX, int startY);
-        void DrawString(Adafruit_RA8875 tft, std::string message, int startX, int startY, int size, int color, Direction dir = LEFT_TO_RIGHT);
+        void DrawString(Adafruit_RA8875 tft, std::string message, int startX, int startY, int size, int16_t color, int16_t backgroundColor, Direction dir = LEFT_TO_RIGHT);
     private:
         TeensyCAN<2> p_can_bus{};
         TeensyCAN<1> g_can_bus{};
