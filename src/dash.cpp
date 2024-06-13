@@ -1,6 +1,7 @@
 #include "dash.h"
 
 #include <iostream>
+#include <map>
 #include <cmath>
 #include <string>
 #include "teensy_can.h"
@@ -18,9 +19,10 @@
 #define SCREEN_HEIGHT 480
 #define CENTER SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2
 #define CENTER_OFFSET(x, y) SCREEN_WIDTH / 2 + x, SCREEN_HEIGHT / 2 + y
-#define ERROR_BAND_HEIGHT 50
-#define BAR_HEIGHT SCREEN_HEIGHT - ERROR_BAND_HEIGHT
-#define BAR_WIDTH 60
+#define BAND_HEIGHT 50
+#define BAR_HEIGHT SCREEN_HEIGHT - BAND_HEIGHT * 2
+#define BAR_WIDTH 50
+#define BAR_SPACING 15
 
 int drive_state_startX = SCREEN_WIDTH / 2;
 int drive_state_startY = SCREEN_HEIGHT / 2 - 160;
@@ -58,8 +60,14 @@ void Dash::Initialize()
     digitalWrite(IMD_ERR_PIN, LOW);
 
     // create bars
-    this->bars["test"] = BarData("t", 0, 100, 0, SCREEN_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
-    this->bars["test2"] = BarData("23", 0, 100, BAR_WIDTH + 20, SCREEN_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+    this->bars["coolant_temp"] = BarData("co", 0, 100, 0, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+    this->bars["inverter_temp"] = BarData("iv", 0, 100, BAR_WIDTH + BAR_SPACING, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+    this->bars["motor_temp"] = BarData("mo", 0, 100, 2 * BAR_WIDTH + 2 * BAR_SPACING, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);  
+
+    this->bars["pack_voltage"] = BarData("pv", 0, 100, SCREEN_WIDTH - BAR_WIDTH, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+    this->bars["min_voltage"] = BarData("nv", 0, 100, SCREEN_WIDTH - 2 * BAR_WIDTH - BAR_SPACING, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+    this->bars["max_cell_temp"] = BarData("mt", 0, 100, SCREEN_WIDTH - 3 * BAR_WIDTH - 2 * BAR_SPACING, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+
 }
 
 void Dash::DrawBackground(Adafruit_RA8875 tft, int16_t color)
@@ -72,21 +80,33 @@ void Dash::DrawBackground(Adafruit_RA8875 tft, int16_t color)
     int rect_height = 200;
     int rect_border_height = rect_height + 2 * border;
     // draw outlines
-    tft.fillRect(SCREEN_HEIGHT / 4 + border * 2, 0, SCREEN_HEIGHT, SCREEN_HEIGHT / 2, RA8875_BLACK);
-    // tft.fillRect(0, SCREEN_HEIGHT / 2 - rect_border_height / 2, SCREEN_WIDTH, rect_border_height, RA8875_BLACK);
-    tft.fillCircle(CENTER, SCREEN_HEIGHT / 2, RA8875_BLACK);
+    tft.fillRect(SCREEN_WIDTH / 3.75, 0, SCREEN_HEIGHT * 0.75, SCREEN_HEIGHT, RA8875_BLACK);
+    tft.fillCircle(CENTER, SCREEN_HEIGHT / 2.2, RA8875_BLACK);
 
     // draw the error band
-    tft.fillRect(0, 0, SCREEN_WIDTH, ERROR_BAND_HEIGHT, RA8875_BLACK);
-    // fill in
-    // tft.fillRect(0, SCREEN_HEIGHT / 2 - rect_height / 2, SCREEN_WIDTH, rect_height, RA8875_WHITE);
-    tft.fillCircle(CENTER, SCREEN_HEIGHT / 2 - border, RA8875_WHITE);
+    tft.fillRect(0, 0, SCREEN_WIDTH, BAND_HEIGHT, RA8875_BLACK);
+    // draw the bottom band
+    tft.fillRect(0, SCREEN_HEIGHT - BAND_HEIGHT, SCREEN_WIDTH, BAND_HEIGHT, RA8875_BLACK);
+    // fill in main circle white
+    tft.fillCircle(CENTER, SCREEN_HEIGHT / 2.2 - border, RA8875_WHITE);
 
-    // // to the left, center, draw "go"
-    // this->DrawString(tft, "GO", CENTER_OFFSET(-350, -30), 8, RA8875_BLACK);
+    // write text beneath the bars
+    // iterate
+    for (auto &bar : this->bars)
+    {
+        BarData &data = bar.second;
+        DrawString(tft, data.displayName, data.x, data.y + 10, 4, RA8875_WHITE, RA8875_BLACK);
+    }
 
-    // // to the right, center, draw "CATS"
-    // this->DrawString(tft, "CATS", CENTER_OFFSET(200, -30), 8, RA8875_BLACK);
+    if (prev_dected_error)
+    {
+        return;
+    }
+
+    // draw info in top left cornder
+    DrawString(tft, "Temperatures", 8, 2, 5, RA8875_WHITE, RA8875_BLACK);
+    // draw info on the top right
+    DrawString(tft, "Battery", SCREEN_WIDTH - 8 * 28, 2, 5, RA8875_WHITE, RA8875_BLACK);
 }
 
 float Dash::WheelSpeedAvg(float fl_wheel_speed, float fr_wheel_speed)
@@ -107,7 +127,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     int fl_wheel_speed = (millis() / 200) % 200;
     int fr_wheel_speed = (millis() / 200) % 200;
     int curr_drive_state = (millis() / 1000) % 3;
-    int imd_status = millis() > 10000 ? -10 : 0;
+    int imd_status = millis() > 50000 ? -10 : 0;
 #endif
     float avg_wheel_speed = fl_wheel_speed + fr_wheel_speed / 2;
 
@@ -122,8 +142,13 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     DrawIMDStatus(tft, 8, 2, imd_status, 32);
 
     // draw the test bar
-    this->DrawBar(tft, "test", (millis() / 100) % 100 , RA8875_GREEN, this->backgroundColor);
-    this->DrawBar(tft, "test2", (millis() / 20) % 100, RA8875_RED, this->backgroundColor);
+    this->DrawBar(tft, "coolant_temp", (millis() / 100) % 100, RA8875_GREEN, this->backgroundColor);
+    this->DrawBar(tft, "inverter_temp", (millis() / 20) % 100, RA8875_YELLOW, this->backgroundColor);
+    this->DrawBar(tft, "motor_temp", (millis() / 10) % 100, RA8875_BLUE, this->backgroundColor);
+
+    this->DrawBar(tft, "pack_voltage", (millis() / 100) % 100, RA8875_GREEN, this->backgroundColor);
+    this->DrawBar(tft, "min_voltage", (millis() / 20) % 100, RA8875_YELLOW, this->backgroundColor);
+    this->DrawBar(tft, "max_cell_temp", (millis() / 10) % 100, RA8875_BLUE, this->backgroundColor);
 
     timer_group.Tick(millis());
 }
@@ -137,7 +162,7 @@ void Dash::DrawBar(Adafruit_RA8875 tft, std::string barName, float newValue, int
         return;
     }
 
-    BarData& bar = this->bars[barName];
+    BarData &bar = this->bars[barName];
 
     // are the values the same?
     if (bar.value == newValue)
@@ -158,7 +183,7 @@ void Dash::DrawBar(Adafruit_RA8875 tft, std::string barName, float newValue, int
     int diff = newHeight - oldHeight;
     bar.value = newValue;
 
-    std::cout << "Drawing bar " << barName << " with value " << newValue << " and height " << newHeight << std::endl;
+    // std::cout << "Drawing bar " << barName << " with value " << newValue << " and height " << newHeight << std::endl;
 
     if (diff > 0)
     {
@@ -173,6 +198,8 @@ void Dash::DrawBar(Adafruit_RA8875 tft, std::string barName, float newValue, int
         // we will draw the bar to go downwards
         tft.fillRect(bar.x, bar.y - oldHeight, bar.width, -diff, backgroundColor);
     }
+
+    // write the value at the bottom of the
 }
 
 void Dash::DrawWheelSpeed(Adafruit_RA8875 tft, float wheel_speed, int startX, int startY)
@@ -295,5 +322,6 @@ int Dash::CalcBarHeight(float value, float min, float max, int maxHeight)
 {
     int lerp = (value - min) / (max - min) * maxHeight;
     // clamp the value between 0 and maxHeight
-    return lerp > maxHeight ? maxHeight : lerp < 0 ? 0 : lerp;
+    return lerp > maxHeight ? maxHeight : lerp < 0 ? 0
+                                                   : lerp;
 }
