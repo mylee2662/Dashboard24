@@ -59,8 +59,10 @@ void Dash::Initialize()
                          { this->GetCAN(); });
 
     pinMode(IMD_ERR_PIN, OUTPUT);
+    pinMode(BMS_ERR_PIN, OUTPUT);
     // ake the pin low
     digitalWrite(IMD_ERR_PIN, LOW);
+    digitalWrite(BMS_ERR_PIN, LOW);
 
     // create bars
     this->bars["coolant_temp"] = BarData("co", 0, 100, 0, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
@@ -289,10 +291,8 @@ void Dash::DrawIMDStatus(Adafruit_RA8875 tft, int startX, int startY, int imd_st
     default:
         return;
     }
-
-    // pull the pin high
-    digitalWrite(IMD_ERR_PIN, HIGH);
-    DrawError(tft, status, startX, startY, IMD_FAULT);
+    
+    HandleError(tft, status, startX, startY, IMD_FAULT);
 }
 
 void Dash::HandleBMSFaults(Adafruit_RA8875 tft, int startX, int startY)
@@ -337,12 +337,22 @@ void Dash::HandleBMSFaults(Adafruit_RA8875 tft, int startX, int startY)
 
     // remove the last comma
     error_message.pop_back();
-
-    DrawError(tft, error_message, startX, startY, BMS_FAULT);
+    HandleError(tft, error_message, startX, startY, BMS_FAULT);
 }
 
-void Dash::DrawError(Adafruit_RA8875 tft, std::string error_message, int startX, int startY, Error type)
+void Dash::HandleError(Adafruit_RA8875 tft, std::string error_message, int startX, int startY, Error type)
 {
+    // write pin high
+    switch (type)
+    {
+    case BMS_FAULT:
+        digitalWrite(BMS_ERR_PIN, HIGH);
+        break;
+    case IMD_FAULT:
+        digitalWrite(IMD_ERR_PIN, HIGH);
+        break;
+    }
+
     if (type == BMS_FAULT && this->error == BMS_FAULT)
     {
         return;
@@ -357,7 +367,6 @@ void Dash::DrawError(Adafruit_RA8875 tft, std::string error_message, int startX,
     {
         return; // give priority to BMS faults
     }
-
     this->error = type;
 
     this->DrawBackground(tft, RA8875_RED);
