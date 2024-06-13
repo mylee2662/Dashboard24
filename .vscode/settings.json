@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "string_view": "cpp"
+        "*.compute": "hlsl",
+        "string_view": "cpp",
+        "bitset": "cpp",
+        "ostream": "cpp"
     }
 }

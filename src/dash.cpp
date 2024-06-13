@@ -9,11 +9,13 @@
 #include "SPI.h"
 #include "Adafruit_GFX.h"
 #include "Adafruit_RA8875.h"
+#include <bitset>
 
 #define RA8875_WAIT 7
 #define RA8875_CS 10
 #define RA8875_RESET 8
-#define IMD_ERR_PIN 1000
+#define IMD_ERR_PIN 6
+#define BMS_ERR_PIN 16
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 480
@@ -23,6 +25,7 @@
 #define BAR_HEIGHT SCREEN_HEIGHT - BAND_HEIGHT * 2
 #define BAR_WIDTH 50
 #define BAR_SPACING 15
+#define MASK(x) (1 << x)
 
 int drive_state_startX = SCREEN_WIDTH / 2;
 int drive_state_startY = SCREEN_HEIGHT / 2 - 160;
@@ -98,7 +101,7 @@ void Dash::DrawBackground(Adafruit_RA8875 tft, int16_t color)
         DrawString(tft, data.displayName, data.x, data.y + 10, 4, RA8875_WHITE, RA8875_BLACK);
     }
 
-    if (prev_dected_error)
+    if (this->error != NO_ERROR)
     {
         return;
     }
@@ -127,7 +130,8 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     int fl_wheel_speed = (millis() / 200) % 200;
     int fr_wheel_speed = (millis() / 200) % 200;
     int curr_drive_state = (millis() / 1000) % 3;
-    int imd_status = millis() > 50000 ? -10 : 0;
+    int imd_status = millis() > 5000 ? -10 : 0;
+    this->bms_faults = millis() > 10000 ? 0b11111111 : 0;
 #endif
     float avg_wheel_speed = fl_wheel_speed + fr_wheel_speed / 2;
 
@@ -140,6 +144,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     this->prev_wheel_speed = avg_wheel_speed;
     // draw IMD status
     DrawIMDStatus(tft, 8, 2, imd_status, 32);
+    HandleBMSFaults(tft, 8, 2);
 
     // draw the test bar
     this->DrawBar(tft, "coolant_temp", (millis() / 100) % 100, RA8875_GREEN, this->backgroundColor);
@@ -271,15 +276,15 @@ void Dash::DrawIMDStatus(Adafruit_RA8875 tft, int startX, int startY, int imd_st
     switch (imd_status)
     {
     case -10:
-        status = "IMD: Short Circuit";
+        status = "IMD:Short Circuit";
         break;
     case -5:
-        status = "IMD: Loading";
+        status = "IMD:Loading";
         break;
     case -25:
-        status = "IMD: Connection Fault";
+        status = "IMD:Connection Fault";
     case -20:
-        status = "IMD: Device Error";
+        status = "IMD:Device Error";
         break;
     default:
         return;
@@ -287,17 +292,86 @@ void Dash::DrawIMDStatus(Adafruit_RA8875 tft, int startX, int startY, int imd_st
 
     // pull the pin high
     digitalWrite(IMD_ERR_PIN, HIGH);
-    DrawError(tft, status, startX, startY);
+    DrawError(tft, status, startX, startY, IMD_FAULT);
 }
 
-void Dash::DrawError(Adafruit_RA8875 tft, std::string error_message, int startX, int startY)
+void Dash::HandleBMSFaults(Adafruit_RA8875 tft, int startX, int startY)
 {
-    if (prev_dected_error)
+    if (this->bms_faults == 0)
+    {
         return;
+    }
 
-    prev_dected_error = true;
+    // there is a fault
+    std::cout << "DETECTED: BMS Faults: " << std::bitset<8>(bms_faults).to_string() << std::endl;
+    std::string error_message = "BMS:";
+
+    if (this->bms_faults & MASK(1))
+    {
+        error_message += "UV,"; // under voltage
+    }
+    if (this->bms_faults & MASK(2))
+    {
+        error_message += "OV,"; // over voltage
+    }
+    if (this->bms_faults & MASK(3))
+    {
+        error_message += "UT,"; // under temperature
+    }
+    if (this->bms_faults & MASK(4))
+    {
+        error_message += "OT,"; // over temperature
+    }
+    if (this->bms_faults & MASK(5))
+    {
+        error_message += "OC,"; // over current
+    }
+    if (this->bms_faults & MASK(6))
+    {
+        error_message += "EK,"; // external kill
+    }
+    if (this->bms_faults & MASK(7))
+    {
+        error_message += "OW,"; // open wire
+    }
+
+    // remove the last comma
+    error_message.pop_back();
+
+    DrawError(tft, error_message, startX, startY, BMS_FAULT);
+}
+
+void Dash::DrawError(Adafruit_RA8875 tft, std::string error_message, int startX, int startY, Error type)
+{
+    if (type == BMS_FAULT && this->error == BMS_FAULT)
+    {
+        return;
+    }
+
+    if (type == IMD_FAULT && this->error == IMD_FAULT)
+    {
+        return;
+    }
+
+    if (type == IMD_FAULT && this->error == BMS_FAULT)
+    {
+        return; // give priority to BMS faults
+    }
+
+    this->error = type;
+
     this->DrawBackground(tft, RA8875_RED);
     DrawString(tft, error_message, startX, startY, 5, RA8875_WHITE, RA8875_BLACK);
+
+    // this is a hack, and bad practice btw, but because we are at comp
+    // we are having issues with the bars being cut in half when we draw the error
+    // this is cause we add/subtract the difference in height from the old height
+    // to fix this, we are just gonna set the height to 0, so the bars are drawn from the bottom
+    for (auto &bar : this->bars)
+    {
+        bar.second.value = 0;
+    }
+
 }
 
 void Dash::DrawString(Adafruit_RA8875 tft, std::string message, int startX, int startY, int size, int16_t color, int16_t backgroundColor, Direction dir)
@@ -324,4 +398,21 @@ int Dash::CalcBarHeight(float value, float min, float max, int maxHeight)
     // clamp the value between 0 and maxHeight
     return lerp > maxHeight ? maxHeight : lerp < 0 ? 0
                                                    : lerp;
+}
+
+void Dash::RecordBMSFaults()
+{
+    uint8_t faults = 0;
+    // bit mask for the faults
+    faults |= static_cast<bool>(bms_fault_summary_signal) << 0;
+    faults |= static_cast<bool>(bms_fault_under_voltage_signal) << 1;
+    faults |= static_cast<bool>(bms_fault_over_voltage_signal) << 2;
+    faults |= static_cast<bool>(bms_fault_under_temperature_signal) << 3;
+    faults |= static_cast<bool>(bms_fault_over_temperature_signal) << 4;
+    faults |= static_cast<bool>(bms_fault_over_current_signal) << 5;
+    faults |= static_cast<bool>(bms_fault_external_kill_signal) << 6;
+    faults |= static_cast<bool>(bms_fault_open_wire_signal) << 7;
+
+    std::cout << "BMS Faults: " << std::bitset<8>(faults).to_string() << std::endl;
+    bms_faults = faults;
 }
