@@ -33,7 +33,7 @@ int wheel_speed_startX = SCREEN_WIDTH / 2;
 int wheel_speed_startY = SCREEN_HEIGHT / 2;
 int bar_max_size = 480;
 
-#define DEBUG
+// #define DEBUG
 
 float motor_temp;
 int drive_state = -1;
@@ -126,6 +126,13 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
     int curr_drive_state = static_cast<int>(drive_state_signal);
     int imd_status = static_cast<int>(imd_status_signal);
+    int coolant_temp = static_cast<int>(coolant_temp_signal);
+    int inverter_temp = static_cast<int>(0); // unknown
+    int motor_temp = static_cast<int>(0); // unknown
+    int pack_voltage = static_cast<int>(0); // unknown
+    int min_voltage = static_cast<int>(bms_min_cell_voltage_signal);
+    int max_cell_temp = static_cast<int>(bms_max_cell_temp_signal);
+    this->bms_faults = static_cast<int>(bms_fault_summary_signal);
 #else
     // we should change the drive state for testing
     // cycle based on time
@@ -134,6 +141,14 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     int curr_drive_state = (millis() / 1000) % 3;
     int imd_status = millis() > 5000 ? -10 : 0;
     this->bms_faults = millis() > 10000 ? 0b11111111 : 0;
+
+    int coolant_temp = (millis() / 100) % 100;
+    int inverter_temp = (millis() / 20) % 100;
+    int motor_temp = (millis() / 10) % 100;
+    int pack_voltage = (millis() / 100) % 100;
+    int min_voltage = (millis() / 20) % 100;
+    int max_cell_temp = (millis() / 10) % 100;
+
 #endif
     float avg_wheel_speed = fl_wheel_speed + fr_wheel_speed / 2;
 
@@ -149,13 +164,13 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     HandleBMSFaults(tft, 8, 2);
 
     // draw the test bar
-    this->DrawBar(tft, "coolant_temp", (millis() / 100) % 100, RA8875_GREEN, this->backgroundColor);
-    this->DrawBar(tft, "inverter_temp", (millis() / 20) % 100, RA8875_YELLOW, this->backgroundColor);
-    this->DrawBar(tft, "motor_temp", (millis() / 10) % 100, RA8875_BLUE, this->backgroundColor);
+    this->DrawBar(tft, "coolant_temp", coolant_temp, RA8875_GREEN, this->backgroundColor);
+    this->DrawBar(tft, "inverter_temp", inverter_temp, RA8875_YELLOW, this->backgroundColor);
+    this->DrawBar(tft, "motor_temp", max_cell_temp, RA8875_BLUE, this->backgroundColor);
 
-    this->DrawBar(tft, "pack_voltage", (millis() / 100) % 100, RA8875_GREEN, this->backgroundColor);
-    this->DrawBar(tft, "min_voltage", (millis() / 20) % 100, RA8875_YELLOW, this->backgroundColor);
-    this->DrawBar(tft, "max_cell_temp", (millis() / 10) % 100, RA8875_BLUE, this->backgroundColor);
+    this->DrawBar(tft, "pack_voltage", pack_voltage, RA8875_GREEN, this->backgroundColor);
+    this->DrawBar(tft, "min_voltage", min_voltage, RA8875_YELLOW, this->backgroundColor);
+    this->DrawBar(tft, "max_cell_temp", max_cell_temp, RA8875_BLUE, this->backgroundColor);
 
     timer_group.Tick(millis());
 }

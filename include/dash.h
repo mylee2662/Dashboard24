@@ -99,10 +99,29 @@ private:
     CANSignal<bool, 5, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> bms_fault_over_current_signal;
     CANSignal<bool, 6, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> bms_fault_external_kill_signal;
     CANSignal<bool, 7, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> bms_fault_open_wire_signal;
-    CANRXMessage<8> rx_bms_faults{g_can_bus, 0x250, [this]() {
+    CANRXMessage<8> rx_bms_faults{
+        g_can_bus, 0x250, [this]() {
                                     RecordBMSFaults();
                                   },
-                                  bms_fault_summary_signal, bms_fault_under_voltage_signal, bms_fault_over_voltage_signal, bms_fault_under_temperature_signal, bms_fault_over_temperature_signal, bms_fault_over_current_signal, bms_fault_external_kill_signal, bms_fault_open_wire_signal};
+                                  bms_fault_summary_signal, 
+                                  bms_fault_under_voltage_signal, 
+                                  bms_fault_over_voltage_signal, 
+                                  bms_fault_under_temperature_signal, 
+                                  bms_fault_over_temperature_signal, 
+                                  bms_fault_over_current_signal, 
+                                  bms_fault_external_kill_signal, 
+                                  bms_fault_open_wire_signal};
+
+    // BMS Status Signals
+    CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> bms_state_signal;
+    CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> bms_max_cell_temp_signal;
+    CANSignal<float, 16, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> bms_min_cell_temp_signal;
+    CANSignal<float, 24, 8, CANTemplateConvertFloat(0.012), CANTemplateConvertFloat(2), false> bms_max_cell_voltage_signal;
+    CANSignal<float, 32, 8, CANTemplateConvertFloat(0.012), CANTemplateConvertFloat(2), false> bms_min_cell_voltage_signal;
+    CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false> bms_soc_signal;
+    CANRXMessage<6> rx_bms_status{
+        g_can_bus, 0x241, bms_state_signal, bms_max_cell_temp_signal, bms_min_cell_temp_signal, bms_max_cell_voltage_signal, bms_min_cell_voltage_signal, bms_soc_signal};   
+
 
     float prev_wheel_speed = -1;
     float prev_fr_wheel_speed = -1;
