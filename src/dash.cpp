@@ -69,7 +69,7 @@ void Dash::Initialize()
     this->bars["inverter_temp"] = BarData("iv", 0, 100, BAR_WIDTH + BAR_SPACING, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
     this->bars["motor_temp"] = BarData("mo", 0, 100, 2 * BAR_WIDTH + 2 * BAR_SPACING, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);  
 
-    this->bars["pack_voltage"] = BarData("pv", 0, 100, SCREEN_WIDTH - BAR_WIDTH, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+    this->bars["battery_voltage"] = BarData("pv", 0, 100, SCREEN_WIDTH - BAR_WIDTH, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
     this->bars["min_voltage"] = BarData("nv", 0, 100, SCREEN_WIDTH - 2 * BAR_WIDTH - BAR_SPACING, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
     this->bars["max_cell_temp"] = BarData("mt", 0, 100, SCREEN_WIDTH - 3 * BAR_WIDTH - 2 * BAR_SPACING, SCREEN_HEIGHT - BAND_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
 
@@ -126,34 +126,30 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
     int curr_drive_state = static_cast<int>(drive_state_signal);
     int imd_status = static_cast<int>(imd_status_signal);
-    int coolant_temp = static_cast<int>(coolant_temp_signal);
-    int inverter_temp = static_cast<int>(0); // unknown
-    int motor_temp = static_cast<int>(0); // unknown
-    int pack_voltage = static_cast<int>(0); // unknown
-    int min_voltage = static_cast<int>(bms_min_cell_voltage_signal);
-    int max_cell_temp = static_cast<int>(bms_max_cell_temp_signal);
-    this->bms_faults = static_cast<int>(bms_fault_summary_signal);
+    float coolant_temp = static_cast<float>(coolant_temp_signal);
+    float inverter_temp = static_cast<int>(0); // unknown
+    float motor_temp = static_cast<float>(0); // unknown
+    float battery_voltage = static_cast<float>(bms_battery_voltage_signal);
+    float min_voltage = static_cast<float>(bms_min_cell_voltage_signal);
+    float max_cell_temp = static_cast<float>(bms_max_cell_temp_signal);
 #else
     // we should change the drive state for testing
     // cycle based on time
-    int fl_wheel_speed = (millis() / 200) % 200;
-    int fr_wheel_speed = (millis() / 200) % 200;
+    float fl_wheel_speed = (millis() / 200) % 200;
+    float fr_wheel_speed = (millis() / 200) % 200;
     int curr_drive_state = (millis() / 1000) % 3;
     int imd_status = millis() > 5000 ? -10 : 0;
     this->bms_faults = millis() > 10000 ? 0b11111111 : 0;
 
-    int coolant_temp = (millis() / 100) % 100;
-    int inverter_temp = (millis() / 20) % 100;
-    int motor_temp = (millis() / 10) % 100;
-    int pack_voltage = (millis() / 100) % 100;
-    int min_voltage = (millis() / 20) % 100;
-    int max_cell_temp = (millis() / 10) % 100;
+    float coolant_temp = (millis() / 100) % 100;
+    float inverter_temp = (millis() / 20) % 100;
+    float motor_temp = (millis() / 10) % 100;
+    float battery_voltage = (millis() / 100) % 100;
+    float min_voltage = (millis() / 20) % 100;
+    float max_cell_temp = (millis() / 10) % 100;
 
 #endif
     float avg_wheel_speed = fl_wheel_speed + fr_wheel_speed / 2;
-
-    // motor_temp = static_cast<float>(motor_temp_signal);
-    drive_state = static_cast<int>(drive_state_signal);
 
     DrawDriveState(tft, drive_state_startX, drive_state_startY, curr_drive_state, 8);
     if (this->prev_wheel_speed != avg_wheel_speed)
@@ -168,7 +164,7 @@ void Dash::UpdateDisplay(Adafruit_RA8875 tft)
     this->DrawBar(tft, "inverter_temp", inverter_temp, RA8875_YELLOW, this->backgroundColor);
     this->DrawBar(tft, "motor_temp", max_cell_temp, RA8875_BLUE, this->backgroundColor);
 
-    this->DrawBar(tft, "pack_voltage", pack_voltage, RA8875_GREEN, this->backgroundColor);
+    this->DrawBar(tft, "battery_voltage", battery_voltage, RA8875_GREEN, this->backgroundColor);
     this->DrawBar(tft, "min_voltage", min_voltage, RA8875_YELLOW, this->backgroundColor);
     this->DrawBar(tft, "max_cell_temp", max_cell_temp, RA8875_BLUE, this->backgroundColor);
 

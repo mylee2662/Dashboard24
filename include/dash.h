@@ -122,6 +122,15 @@ private:
     CANRXMessage<6> rx_bms_status{
         g_can_bus, 0x241, bms_state_signal, bms_max_cell_temp_signal, bms_min_cell_temp_signal, bms_max_cell_voltage_signal, bms_min_cell_voltage_signal, bms_soc_signal};   
 
+    // BMS SOE Signals
+    CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> bms_max_discharge_signal;
+    CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> bms_max_regen_current_signal;
+    CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> bms_battery_voltage_signal;
+    CANSignal<float, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> bms_battery_temperature_signal;
+    CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> bms_battery_current_signal;
+    CANRXMessage<5> rx_bms_soe{
+        g_can_bus, 0x240, bms_max_discharge_signal, bms_max_regen_current_signal, bms_battery_voltage_signal, bms_battery_temperature_signal, bms_battery_current_signal};
+
 
     float prev_wheel_speed = -1;
     float prev_fr_wheel_speed = -1;
